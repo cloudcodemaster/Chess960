@@ -1,73 +1,71 @@
-﻿List<string> positions = GenerateChess960Positions();
-        foreach (string position in positions)
+﻿ int counter = 1; 
+ 
+ foreach (string position in GenerateChess960Positions())
         {
-            Console.WriteLine(position);
+            Console.WriteLine(counter + " " + position);
+            counter++;
         }
-        Console.WriteLine($"Total positions: {positions.Count}");
+Console.ReadLine();
 
-
-static List<string> GenerateChess960Positions()
+static IEnumerable<string> GenerateChess960Positions()
     {
-        List<string> positions = new List<string>();
-        
-        // Generate all positions for the bishops
         for (int b1 = 0; b1 < 8; b1 += 2)
         {
             for (int b2 = 1; b2 < 8; b2 += 2)
             {
-                // Generate all positions for the queen
                 for (int q = 0; q < 8; q++)
                 {
                     if (q == b1 || q == b2) continue;
-                    
-                    // Generate all positions for the knights
+
                     for (int n1 = 0; n1 < 8; n1++)
                     {
                         if (n1 == b1 || n1 == b2 || n1 == q) continue;
-                        
+
                         for (int n2 = n1 + 1; n2 < 8; n2++)
                         {
                             if (n2 == b1 || n2 == b2 || n2 == q) continue;
-                            
-                            // Determine remaining positions for rooks and king
+
                             List<int> remaining = new List<int>();
                             for (int i = 0; i < 8; i++)
                             {
                                 if (i != b1 && i != b2 && i != q && i != n1 && i != n2)
-                                {
                                     remaining.Add(i);
-                                }
                             }
-                            
-                            // Generate all valid positions for rooks and king
-                            for (int i = 0; i < remaining.Count; i++)
+
+                            foreach (var pos in GetRookKingPositions(remaining))
                             {
-                                for (int j = i + 1; j < remaining.Count; j++)
-                                {
-                                    int k = remaining.Find(x => x != remaining[i] && x != remaining[j]);
-                                    
-                                    // Ensure king is between the two rooks
-                                    if ((remaining[i] < k && k < remaining[j]) || (remaining[j] < k && k < remaining[i]))
-                                    {
-                                        char[] position = new char[8];
-                                        position[b1] = 'B';
-                                        position[b2] = 'B';
-                                        position[q] = 'Q';
-                                        position[n1] = 'N';
-                                        position[n2] = 'N';
-                                        position[remaining[i]] = 'R';
-                                        position[remaining[j]] = 'R';
-                                        position[k] = 'K';
-                                        
-                                        positions.Add(new string(position));
-                                    }
-                                }
+                                yield return GeneratePosition(b1, b2, q, n1, n2, pos[0], pos[1], pos[2]);
                             }
                         }
                     }
                 }
             }
         }
-        
-        return positions;
+    }
+
+    static IEnumerable<int[]> GetRookKingPositions(List<int> positions)
+    {
+        for (int i = 0; i < positions.Count; i++)
+        {
+            for (int j = i + 1; j < positions.Count; j++)
+            {
+                int k = positions.Find(x => x != positions[i] && x != positions[j]);
+                if ((positions[i] < k && k < positions[j]) || (positions[j] < k && k < positions[i]))
+                    yield return new int[] { positions[i], positions[j], k };
+            }
+        }
+    }
+
+    static string GeneratePosition(int b1, int b2, int q, int n1, int n2, int r1, int r2, int k)
+    {
+        char[] position = new char[8];
+        position[b1] = 'B';
+        position[b2] = 'B';
+        position[q] = 'Q';
+        position[n1] = 'N';
+        position[n2] = 'N';
+        position[r1] = 'R';
+        position[r2] = 'R';
+        position[k] = 'K';
+        return new string(position);
     }
